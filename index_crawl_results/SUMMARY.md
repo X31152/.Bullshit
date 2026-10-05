@@ -1,19 +1,17 @@
 # Index / crawl directive check
 
 Site: https://www.helenharp-realty.com  
-Run: 2026-10-05 20:26 UTC  
+Run: 2026-10-05 20:35 UTC  
 robots.txt group for Googlebot: `googlebot` (4671 rules)  
 Sitemap URLs (site pages): 13354 - all checked against robots.txt  
-Site pages fetched: 300  
-Listing candidates: 734 (pattern: `auto`)
+Site pages fetched: 196  
+Listing candidates: 881 (pattern: `^/property-|-listings/?$`)
 
 ## Result: FAIL
 
-- FAIL: 1 sampled site pages carry noindex, 1 carry nofollow -> site_pages_problems.csv
-- FAIL: 238 listing(-candidate) URLs are NOT blocked by robots.txt -> listing_pages_robots.csv (filter robots_allowed=True)
-- FAIL: 67 CSS/JS/image files used by site pages are blocked -> assets_blocked_by_robots.csv
-- NOTE: 273 sampled site pages not HTTP 200 (see site_pages_problems.csv; 410s may be intentional retirements)
-- NOTE: No --listing-pattern given: every linked URL not in the sitemaps was treated as a listing candidate. Review linked_not_in_sitemap_by_pattern.csv, then re-run with --listing-pattern for an exact verdict.
+- FAIL: 4 sampled site pages carry noindex, 4 carry nofollow -> site_pages_problems.csv
+- FAIL: 489 CSS/JS/image files used by site pages are blocked -> assets_blocked_by_robots.csv
+- NOTE: 4 sampled site pages not HTTP 200 (see site_pages_problems.csv; 410s may be intentional retirements)
 
 ## robots.txt rules applied to Googlebot
 ```
