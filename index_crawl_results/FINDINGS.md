@@ -16,7 +16,7 @@ Run from a GitHub Actions runner (public site, Googlebot user-agent). Raw CSVs i
 2. **robots.txt is 462 KB; Google ignores everything past 500 KiB.** ~9,300 rules, mostly one Disallow
    per retired page, duplicated in the `*` and `Googlebot` groups. Googlebot reads only its own group,
    which is the second half of the file, so its last rules are dropped first if the file grows ~8%.
-   Replace per-page rules with patterns, and stop listing retired (410) pages in robots.txt at all:
+   Replace per-page rules with patterns. If the per-page rules are for retired (410) pages, drop them:
    a 410 already tells Google the page is gone, and a Disallow stops Google from ever seeing that 410.
 3. **Images blocked (minor):** 483 `/mlsphoto/` photos and a few `?v=` images on site pages
    (`/images/*.png`, hero `.webp`). Doesn't block indexing; keeps them out of Google Images.
