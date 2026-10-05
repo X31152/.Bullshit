@@ -1,0 +1,42 @@
+name: index-crawl-check
+on:
+  push:
+    branches: [ccr-deefca49-4z8veb]
+    paths: ["tasks/**", ".github/workflows/index-crawl-check.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe site
+        run: |
+          for ua in "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36"; do
+            echo "UA: $ua"; curl -sS -o /dev/null -w "  / -> %{http_code}\n" -A "$ua" https://www.helenharp-realty.com/
+          done
+          echo "--- robots.txt"; curl -sS https://www.helenharp-realty.com/robots.txt
+      - name: Run check
+        run: |
+          PATTERN=""
+          [ -s tasks/listing_pattern.txt ] && PATTERN="$(head -1 tasks/listing_pattern.txt)"
+          echo "listing pattern: '${PATTERN:-auto}'"
+          python tasks/check_index_crawl.py ${PATTERN:+--listing-pattern "$PATTERN"} --out index_crawl_results || echo "CHECK_EXIT=$?"
+          echo "=== linked_not_in_sitemap_by_pattern.csv (top 60)"
+          head -61 index_crawl_results/linked_not_in_sitemap_by_pattern.csv || true
+          for f in site_pages_blocked_by_robots site_pages_problems listing_pages_robots assets_blocked_by_robots; do
+            echo "=== $f.csv ($(($(wc -l < index_crawl_results/$f.csv)-1)) rows, first 25)"; head -26 index_crawl_results/$f.csv
+          done
+          echo "=== listing_pages_sample.csv (first 15)"; head -16 index_crawl_results/listing_pages_sample.csv
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898900+github-actions[bot]@users.noreply.github.com"
+          git add -f index_crawl_results
+          git commit -m "Index/crawl check results [skip ci]" || exit 0
+          git push

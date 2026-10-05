@@ -236,7 +236,11 @@ def main():
     ap.add_argument("--listing-sample", type=int, default=60, help="listing pages to fetch")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", default="index_crawl_results")
+    ap.add_argument("--ua", default="", help="override User-Agent (default: Googlebot)")
     args = ap.parse_args()
+    global UA
+    if args.ua:
+        UA = args.ua
 
     site = args.site.rstrip("/")
     host = urllib.parse.urlsplit(site).netloc
