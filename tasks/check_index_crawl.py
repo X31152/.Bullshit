@@ -36,7 +36,20 @@ from pathlib import Path
 UA = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
 
-def fetch(url, timeout=30):
+DELAY = 0.25
+
+
+def fetch(url, timeout=30, retries=4):
+    for attempt in range(retries + 1):
+        res = _fetch(url, timeout)
+        if res[0] != 429 or attempt == retries:
+            return res
+        wait = res[2].get("Retry-After", "")
+        time.sleep(int(wait) if wait.isdigit() else 20 * (attempt + 1))
+    return res
+
+
+def _fetch(url, timeout):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -196,7 +209,7 @@ def inspect(url, host):
     assets = {same(h) for h in p.assets}
     assets = {u for u in assets if urllib.parse.urlsplit(u).netloc == host}
     xrt = "; ".join(v for k, v in headers.items() if k.lower() == "x-robots-tag")
-    time.sleep(0.25)
+    time.sleep(DELAY)
     return {
         "url": url, "status": status, "final_url": final,
         "x_robots_tag": xrt, "meta_robots": " | ".join(p.meta_robots),
@@ -236,9 +249,11 @@ def main():
     ap.add_argument("--listing-sample", type=int, default=60, help="listing pages to fetch")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", default="index_crawl_results")
+    ap.add_argument("--delay", type=float, default=0.25, help="seconds between fetches per worker")
     ap.add_argument("--ua", default="", help="override User-Agent (default: Googlebot)")
     args = ap.parse_args()
-    global UA
+    global UA, DELAY
+    DELAY = args.delay
     if args.ua:
         UA = args.ua
 

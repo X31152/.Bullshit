@@ -9,7 +9,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,7 +26,7 @@ jobs:
           PATTERN=""
           [ -s tasks/listing_pattern.txt ] && PATTERN="$(head -1 tasks/listing_pattern.txt)"
           echo "listing pattern: '${PATTERN:-auto}'"
-          python tasks/check_index_crawl.py ${PATTERN:+--listing-pattern "$PATTERN"} --out index_crawl_results || echo "CHECK_EXIT=$?"
+          python tasks/check_index_crawl.py ${PATTERN:+--listing-pattern "$PATTERN"} --workers 1 --delay 1.5 --sample 200 --listing-sample 40 --out index_crawl_results || echo "CHECK_EXIT=$?"
           echo "=== linked_not_in_sitemap_by_pattern.csv (top 60)"
           head -61 index_crawl_results/linked_not_in_sitemap_by_pattern.csv || true
           for f in site_pages_blocked_by_robots site_pages_problems listing_pages_robots assets_blocked_by_robots; do
